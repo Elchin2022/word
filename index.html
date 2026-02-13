@@ -2,8 +2,34 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Word Frequency Lookup</title>
+<title>Word Frequency</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 15px;
+  }
+
+  .rank-container {
+    font-weight: bold;
+    line-height: 1.1;
+  }
+
+  .k-part {
+    font-size: 64px;   /* BIG */
+  }
+
+  .rest-part {
+    font-size: 28px;   /* smaller */
+  }
+
+  .not-found {
+    font-size: 22px;
+  }
+</style>
 </head>
+
 <body>
 <div id="result">Loading...</div>
 
@@ -12,6 +38,34 @@
   const word = params.get("q")?.toLowerCase();
   const resultDiv = document.getElementById("result");
 
+  function formatRank(rank) {
+    if (rank >= 1000) {
+      const thousands = Math.floor(rank / 1000);
+      const remainder = rank % 1000;
+
+      if (remainder === 0) {
+        return `
+          <div class="rank-container">
+            <span class="k-part">${thousands}K</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="rank-container">
+          <span class="k-part">${thousands}K</span>
+          <span class="rest-part"> ${remainder}</span>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="rank-container">
+        <span class="k-part">${rank}</span>
+      </div>
+    `;
+  }
+
   if (!word) {
     resultDiv.innerText = "No word provided.";
   } else {
@@ -19,15 +73,15 @@
       .then(res => res.json())
       .then(data => {
         const rank = data[word];
-        if(rank){
-          const percentage = ((rank / 50000) * 100).toFixed(2);
-          resultDiv.innerHTML = `<strong>${word}</strong><br>Rank: ${rank}<br>Top ${percentage}%`;
+
+        if (rank) {
+          resultDiv.innerHTML = formatRank(rank);
         } else {
-          resultDiv.innerHTML = `<strong>${word}</strong><br>Not in top 50K`;
+          resultDiv.innerHTML = `<div class="not-found">Not in top list</div>`;
         }
       });
   }
 </script>
+
 </body>
 </html>
-
